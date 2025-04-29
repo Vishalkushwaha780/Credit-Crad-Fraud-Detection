@@ -1,0 +1,99 @@
+### Credit Card Fraud Detection using Regression and Classification Techniques
+## Problem Statement
+
+The dataset contains transactions made by credit cards in September 2013 by European cardholders.
+This dataset presents transactions that occurred in two days,where we have 492 frauds out of 284,807 transactions.
+The dataset is highly unbalanced, the positive class (frauds) account for 0.172% of all transactions.
+## Importing necessary Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import streamlit as st
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score
+### Importing the dataset using the pandas libraries
+df =pd.read_csv('creditcard.csv')
+
+checking the top5 rows of the dataset
+df.head()
+### Exploratory Data Analysis
+
+checking the bottom 5 rows of the dataset
+df.tail()
+checking information about data set
+df.info()
+checking the number of null value in each coloumn
+df.isnull().sum()
+checking for the correlation
+df.corr(numeric_only=True)
+checking for duplicate value
+df.duplicated().sum()
+## Univariate Analysis
+plt.figure(figsize=(10,6))
+sns.countplot(data = df,x='Class')
+plt.title('Distribution of Class data')
+plt.xlabel('0-Normal Transaction    1-Fraudulent Transaction')
+plt.show()
+This Dataset is highly unbalanced
+plt.figure(figsize=(7,5))
+sns.histplot(df['Amount'],bins=30,kde=True)
+plt.figure(figsize=(10,7))
+df['Class'].value_counts().plot(kind='pie',autopct='%1.1f%%')
+plt.title("Number of Legit and Fraud transcation",fontsize=20)
+plt.show()
+fig, ax = plt.subplots()
+sns.barplot(x='Class', y='Amount', data=df, palette='Set1', ax=ax)
+plt.title("Amount-wise Class Count")
+plt.xlabel("Class")
+plt.ylabel("Total Amount")
+st.pyplot(fig)
+fig, ax = plt.subplots()
+sns.scatterplot(data=df, x="V1", y="Amount", hue="Class", palette="viridis", alpha=0.7)
+plt.title("V1 vs. Amount with Class Status")
+plt.xlabel("Amount")
+plt.ylabel("V1")
+
+
+
+seperating the dataset for analysis
+legit = df[df.Class==0]
+fraud = df[df.Class==1]
+print(legit.shape)
+print(fraud.shape)
+### statistical measurs of data
+legit.Amount.describe()
+fraud.Amount.describe()
+## Compare the values for both transcation
+df.groupby('Class').mean()
+## Using Under Sampling
+Build a sample dataset containing similar distribution of normal transaction and Fraudulent Transactions
+legit_sample=legit.sample(n=492)
+Concatenating two dataframes
+new_df = pd.concat([legit_sample, fraud],axis=0)
+new_df.head()
+new_df.tail()
+new_df['Class'].value_counts()
+
+new_df.groupby('Class').mean()
+# nature of the dataset does not change as we can see
+### Splitting the data into features and targets
+x= new_df.drop(columns='Class')
+y=new_df['Class']
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2,random_state =2)
+model_lr = LogisticRegression()
+model_lr.fit(x_train,y_train)
+y_train_pred_lr = model_lr.predict(x_train)
+y_train_pred_lr
+
+accuracy_score_lr_train = accuracy_score(y_train,y_train_pred_lr)
+accuracy_score_lr_train
+y_pred_test_lr = model_lr.predict(x_test)
+accuracy_score_lr_test = accuracy_score(y_test,y_pred_test_lr)
+accuracy_score_lr_test
+import joblib
+joblib.dump(model_lr, 'model.pkl')
+
+
